@@ -1,16 +1,26 @@
-name: BiliPush
+name: B站动态推送钉钉
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '*/2 * * * *'
   workflow_dispatch:
 jobs:
-  build:
+  push:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install rss-push
-      - run: rss-push --rss "https://rsshub.app/bilibili/user/dynamic/11473291" --dingtalk-webhook "${{ secrets.DINGTALK_WEBHOOK }}" --dingtalk-keyword "B站"
+
+      - name: Install rss-push
+        run: pip install rss-push
+
+      - name: Run RSS Push
+        run: |
+          rss-push \
+            --rss "https://rsshub.app/bilibili/user/dynamic/11473291" \
+            --dingtalk-webhook "https://oapi.dingtalk.com/robot/send?access_token=8b56cbfc6f12b0575ef89b2bb92b41c5fca5183d9c6acd9d220776ad102a21ab" \
+            --dingtalk-keyword "B站"
