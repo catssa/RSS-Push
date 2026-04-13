@@ -7,20 +7,37 @@ jobs:
   push:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install rss-push
-        run: pip install rss-push
-
-      - name: Run RSS Push
+      - name: 推送B站动态到钉钉
         run: |
-          rss-push \
-            --rss "https://rsshub.app/bilibili/user/dynamic/11473291" \
-            --dingtalk-webhook "https://oapi.dingtalk.com/robot/send?access_token=8b56cbfc6f12b0575ef89b2bb92b41c5fca5183d9c6acd9d220776ad102a21ab" \
-            --dingtalk-keyword "B站"
+          # 安装依赖
+          pip install requests
+          # 获取RSS内容
+          curl -s "https://rsshub.app/bilibili/user/dynamic/11473291" > rss.xml
+          # 解析RSS并发送钉钉
+          python3 << 'EOF'
+import xml.etree.ElementTree as ET
+import requests
+
+# 钉钉Webhook
+webhook = "https://oapi.dingtalk.com/robot/send?access_token=8b56cbfc6f12b0575ef89b2bb92b41c5fca5183d9c6acd9d220776ad102a21ab"
+
+# 解析RSS
+tree = ET.parse("rss.xml")
+root = tree.getroot()
+channel = root.find("channel")
+items = channel.findall("item")
+
+# 取最新一条动态
+if items:
+    latest = items[0]
+    title = latest.find("title").text
+    link = latest.find("link").text
+    # 发送钉钉消息
+    data = {
+        "msgtype": "text",
+        "text": {
+            "content": f"B站动态更新\n{title}\n{link}"
+        }
+    }
+    requests.post(webhook, json=data)
+EOF
