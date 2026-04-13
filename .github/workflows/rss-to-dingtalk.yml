@@ -13,8 +13,8 @@ jobs:
           pip install requests
           # 获取RSS内容
           curl -s "https://rsshub.app/bilibili/user/dynamic/11473291" > rss.xml
-          # 解析RSS并发送钉钉
-          python3 << 'EOF'
+          # 解析RSS并发送钉钉（关键修复：Python代码必须在run块的脚本块中，带缩进）
+          python3 - << 'EOF'
 import xml.etree.ElementTree as ET
 import requests
 
